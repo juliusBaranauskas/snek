@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+<canvas id="myCanvas" width="1000" height="500" border: 1px solid #d3d3d3 tabindex='1'></canvas>
+
+  <script>
+  window.onload = function () {
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = "grey";
+    ctx.fillRect(0, 0, c.width, c.height);
+    var foods;
+    var parentX;
+    var parentY;
+    var score = 0;
+    var snakeBody = []; // snakeBody.push(new Snake)
+    var foodX = null;
+    var foodY = null;
+    var newfoodX = null;
+    var newfoodY = null;
+    var iX;
+    var iY;
+    var pushQuantity = 0;
+    var startGame = false;
+    snakeBody.push(new Snake(0));
+    food = new Food();
+    food.updatePosition();
+    var pushSnake = false;
+
+    function snakeOccupied (x, y){
+      for(var i = 0; i < snakeBody.length; i++){
+      if(snakeBody[i].occupation(x, y)){
+        return true;
+      }
+    }
+    return false;
+    }
+
+    function Snake(snakeType){ // snaketype 0 = snake s head; snakeType 1 = body
+      switch (snakeType) {
+        case 0:
+        this.x = c.width/2;
+        this.y = (c.height/2)+10;
+        this.direction;
+          break;
+          case 1:
+          this.x = foodX;
+          this.y = foodY;
+            break;
+        default:
+
+      }
+      this.rectSize = 20;
+
+      this.Move = function () {
+        switch (this.direction) {
+          case "up":
+            this.y -= this.rectSize;
+            break;
+            case "down":
+              this.y += this.rectSize;
+              break;
+              case "right":
+                this.x += this.rectSize;
+                break;
+                case "left":
+                  this.x -= this.rectSize;
+                  break;
+          default:
+        }
+      }
+
+        this.Draw = function () {
+          ctx.fillStyle="#336600";
+          ctx.fillRect(this.x, this.y, this.rectSize, this.rectSize);
+          ctx.fillStyle ="#4C9900";
+          ctx.fillRect(this.x+4, this.y+4, this.rectSize-8, this.rectSize-8);
+         }
+
+        this.SetDirection = function (keyCode) {
+          if(this.direction == "up" || this.direction == "down"){
+            switch (keyCode) {
+                  case 68:
+                    this.direction = "right";
+                    break;
+                    case 65:
+                      this.direction = "left";
+                      break;
+              default:
+            }
+            }else if(this.direction == "right" || this.direction == "left"){
+              switch (keyCode) {
+                case 87:
+                  this.direction = "up";
+                  break;
+                  case 83:
+                    this.direction = "down";
+                    break;
+                default:
+              }
+            }else{
+              switch (keyCode) {
+                    case 68:
+                      this.direction = "right";
+                      break;
+                      case 65:
+                        this.direction = "left";
+                        break;
+                        case 87:
+                          this.direction = "up";
+                          break;
+                          case 83:
+                            this.direction = "down";
+                            break;
+                        default:
+            }
+            }
+          }
+          this.foodEaten = function () {
+            if((this.x == foodX && this.y == foodY) || (this.x == newfoodX && this.y == newfoodY)){
+              return true;
+            }else{
+              return false;
+            }
+          }
+
+          this.updateParent = function(){
+            parentX = this.x;
+            parentY = this.y;
+          }
+
+          this.Bordercheck = function(){
+            if(this.x >= c.width){
+              this.x = 0;
+            }else if(this.x < 0){
+              this.x = c.width - this.rectSize;
+            }else if(this.y >= c.height){
+              this.y = 0;
+            }else if(this.y < 0){
+              this.y = c.height - this.rectSize;
+            }
+          }
+          this.setToParent = function(){
+            if(parentY != null){
+              this.x = parentX;
+              this.y = parentY;
+            }
+          }
+          this.occupation = function (x, y) {
+            if(this.x == x && this.y == y){
+              return true;
+            }else{
+              return false;
+            }
+          }
+          this.getPos = function(){
+            iX = this.x;
+            iY = this.y;
+          }
+        }
+    function Food() {
+      this.foodSize = 20;
+      this.randomX = Math.round(Math.random()*(c.width/this.foodSize - this.foodSize) + 0);
+      this.randomY = Math.round(Math.random()*(c.height/this.foodSize - this.foodSize) + 0);
+
+      while (true) {
+        if(snakeOccupied(this.randomX, this.randomY)){
+          this.randomX = Math.round(Math.random()*(c.width/this.foodSize - this.foodSize) + 0);
+          this.randomY = Math.round(Math.random()*(c.height/this.foodSize - this.foodSize) + 0);
+        }else{
+          break;
+        }
+      }
+      this.x = this.randomX * this.foodSize;
+      this.y = this.randomY * this.foodSize;
+
+      this.Draw = function(){
+        ctx.fillStyle ="black";
+        ctx.fillRect(this.x+5, this.y+5, this.foodSize-10, this.foodSize-10);
+      }
+      this.updatePosition = function () {
+        foodX = this.x;
+        foodY = this.y;
+      }
+      this.updateNewPosition = function () {
+        newfoodX = this.x;
+        newfoodY = this.y;
+      }
+    }
+
+var update = setInterval(function () {
+  ctx.fillStyle = "grey";
+  ctx.fillRect(0, 0, c.width, c.height);
+
+if(startGame != true){
+  ctx.fillStyle = "red";
+  ctx.font = "100px Arial";
+      ctx.fillText("USE WSAD TO MOVE", (c.width/2)-150, (c.height/2)-75, 200);
+      ctx.fillStyle = "#006600";
+      ctx.fillText("Press R to restart", (c.width / 2) - 215, (c.height / 2)-75 + 200, 300);
+}
+
+  parentX = null;
+  parentY = null;
+for(var i = snakeBody.length - 1; i > -1; i--){
+
+if(i == 0){
+  snakeBody[i].Move();
+  snakeBody[i].Bordercheck();
+  snakeBody[i].getPos();
+  for(var x = 1; x < snakeBody.length; x++){
+    if(snakeBody[x].occupation(iX, iY)){
+      clearInterval(update);
+      ctx.fillStyle = "red";
+      ctx.font = "100px Arial";
+          ctx.fillText("GAME OVER", (c.width/2)-150, c.height/2, 200);
+          ctx.fillStyle = "#006600";
+          ctx.fillText("SCORE: " + (score-1), (c.width / 2) - 200, c.height / 2 + 100, 200);
+          ctx.fillStyle = "#006600";
+          ctx.fillText("Press R to restart", (c.width / 2) - 215, c.height / 2 + 200, 300);
+    }
+  }
+}else{
+  snakeBody[i-1].updateParent();
+  snakeBody[i].setToParent();
+}
+snakeBody[i].Draw();
+
+}
+food.Draw();
+if(snakeBody[0].foodEaten()){
+  food = new Food();
+  food.updateNewPosition();
+  pushQuantity++;
+  score++;
+}
+if(pushSnake == true){
+  while(pushQuantity > 0){
+    snakeBody.push(new Snake(1));
+    pushQuantity--;
+  }
+  food.updatePosition();
+  pushSnake = false;
+  pushQuantity = 0;
+}
+if(snakeBody[snakeBody.length-1].foodEaten()){
+  pushSnake = true;
+}
+  document.addEventListener("keydown", function (event) {
+    if(event.keyCode == "82"){
+      location.reload();
+    }
+    snakeBody[0].SetDirection(event.keyCode);
+    startGame = true;
+  });
+
+}, 200);
+
+  };
+  </script>
+</body>
+    </html>
